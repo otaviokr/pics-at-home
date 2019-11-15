@@ -1,0 +1,16 @@
+{{ template "header" . }}
+
+{{ template "body_upper" . }}
+
+    <div class="row">
+        <div class="cell">
+            <a href="/pic/detail/{{.ID}}">
+                <div class="img-container thumbnail">
+                    <img data-src="{{.Path}}/100px100">
+                    <span class="title">{{.Description}}</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+{{ template "body_lower" . }}
