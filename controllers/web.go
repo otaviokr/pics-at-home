@@ -1,14 +1,15 @@
 package controllers
 
 import (
-	"net/http"
-	"image/jpeg"
-	"strconv"
-	"fmt"
 	"encoding/json"
-	"github.com/otaviokr/pics/models"
+	"fmt"
+	"image/jpeg"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
-	"github.com/otaviokr/pics/utils"
+	"github.com/otaviokr/pics-at-home/models"
+	"github.com/otaviokr/pics-at-home/utils"
 )
 
 // CreatePicWeb inserts a new picture into database.
@@ -20,25 +21,25 @@ var CreatePicWeb = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if validation, ok := pic.Validate(); !ok {
+	if validation, ok := pic.Validate(models.GetDB()); !ok {
 		fmt.Println("Error validating new picture data.")
 		fmt.Println(validation)
 		utils.Respond(w, utils.Message(false, "Invalid request"))
 		return
 	}
 
-	response := pic.Create()
+	response := pic.Create(models.GetDB())
 	utils.Respond(w, response)
 }
 
 // GetRandomPicWeb fetches a random picture from the server.
 var GetRandomPicWeb = func(w http.ResponseWriter, r *http.Request) {
-	pic := models.GetRandomPicture()
+	pic := models.GetRandomPicture(models.GetDB())
 
 	if pic == nil {
 		fmt.Println("No random Pic returned!")
 	}
-	
+
 	jpeg.Encode(w, pic, nil)
 }
 
@@ -46,7 +47,7 @@ var GetRandomPicWeb = func(w http.ResponseWriter, r *http.Request) {
 var GetRecentPicsWeb = func(w http.ResponseWriter, r *http.Request) {
 	var pics []models.Picture
 
-	pics = models.GetRecentPics(20)
+	pics = models.GetRecentPics(20, models.GetDB())
 	renderTemplateList(w, "piclist", pics)
 }
 
@@ -60,7 +61,7 @@ var GetDetailPicWeb = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pic = models.GetPictureByID(uint(id))
+	pic = models.GetPictureByID(uint(id), models.GetDB())
 	renderTemplate(w, "detail", pic)
 }
 

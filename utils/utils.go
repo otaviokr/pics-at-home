@@ -6,8 +6,8 @@ import (
 )
 
 // Message wraps up a message in JSON-compliant format.
-func Message(status bool, message string) (map[string]interface{}) {
-	return map[string]interface{} {"status": status, "message": message}
+func Message(status bool, message string) map[string]interface{} {
+	return map[string]interface{}{"status": status, "message": message}
 }
 
 // Respond sends a JSON response.

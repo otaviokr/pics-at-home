@@ -1,39 +1,43 @@
 package models
 
 import (
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"path/filepath"
-	"html/template"
-	"github.com/jinzhu/gorm"
-	"os"
 	"fmt"
+	"html/template"
+	"os"
+	"path/filepath"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
 )
 
 var (
-	db *gorm.DB
+	db        *gorm.DB
 	templates *template.Template
 )
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Failed to load the env file!")
-		panic(err)
-	}
+	env, _ := os.LookupEnv("env")
+	if env == "prod" {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Failed to load the env file!")
+			panic(err)
+		}
 
+		pathTemplate := os.Getenv("path_template")
+		startTemplates(pathTemplate)
+	}
+}
+
+// StartDB initializes database connection.
+func StartDB() {
 	username := os.Getenv("db_user")
 	password := os.Getenv("db_pass")
 	dbName := os.Getenv("db_name")
 	dbHost := os.Getenv("db_host")
-	startDB(username, password, dbName, dbHost)
 
-	pathTemplate := os.Getenv("path_template")
-	startTemplates(pathTemplate)
-}
-
-func startDB(user, password, dbname, host string) {
-	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", host, user, dbname, password)
+	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", dbHost, username, dbName, password)
 	fmt.Println(dbURI)
 
 	conn, err := gorm.Open("postgres", dbURI)
@@ -64,11 +68,11 @@ func startTemplates(path string) {
 }
 
 // GetDB returns a handle to database object.
-func GetDB() (*gorm.DB) {
+func GetDB() *gorm.DB {
 	return db
 }
 
 // GetHTMLTemplates returns a handle to the HTML Templates.
-func GetHTMLTemplates() (*template.Template) {
+func GetHTMLTemplates() *template.Template {
 	return templates
 }

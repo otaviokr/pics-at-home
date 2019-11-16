@@ -1,19 +1,24 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"os"
 	"fmt"
 	"net/http"
-	"github.com/otaviokr/pics/controllers"
+	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/otaviokr/pics-at-home/controllers"
+	"github.com/otaviokr/pics-at-home/models"
 )
 
 const (
-	// STATIC_DIR is the path used to serve static files.
-	STATIC_DIR = "/static/"
+	// StaticDir is the path used to serve static files.
+	StaticDir = "/static/"
 )
 
 func main() {
+
+	models.StartDB()
+
 	router := mux.NewRouter()
 	// TODO Define JWT Authentication.
 	// router.Use(app.JwtAuthentication)
@@ -28,7 +33,7 @@ func main() {
 
 	router.HandleFunc("/pic", controllers.GetRecentPicsWeb).Methods("GET")
 
-	router.PathPrefix(STATIC_DIR).Handler(http.StripPrefix(STATIC_DIR, http.FileServer(http.Dir(os.Getenv("IMG_PATH")))))
+	router.PathPrefix(StaticDir).Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(os.Getenv("IMG_PATH")))))
 	router.HandleFunc("/", controllers.GetRecentPicsWeb).Methods("GET")
 
 	port := os.Getenv("PORT")
