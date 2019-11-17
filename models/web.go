@@ -1,40 +1,39 @@
-package controllers
+package models
 
 import (
 	"encoding/json"
+	"strconv"
 	"fmt"
 	"image/jpeg"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/otaviokr/pics-at-home/models"
 	"github.com/otaviokr/pics-at-home/utils"
 )
 
 // CreatePicWeb inserts a new picture into database.
-var CreatePicWeb = func(w http.ResponseWriter, r *http.Request) {
-	pic := &models.Picture{}
+func (a *App) CreatePicWeb(w http.ResponseWriter, r *http.Request) {
+	pic := &Picture{}
 	err := json.NewDecoder(r.Body).Decode(pic)
 	if err != nil {
 		utils.Respond(w, utils.Message(false, "Invalid request"))
 		return
 	}
 
-	if validation, ok := pic.Validate(models.GetDB()); !ok {
+	if validation, ok := pic.Validate(a.GetDB()); !ok {
 		fmt.Println("Error validating new picture data.")
 		fmt.Println(validation)
 		utils.Respond(w, utils.Message(false, "Invalid request"))
 		return
 	}
 
-	response := pic.Create(models.GetDB())
+	response := pic.Create(a.GetDB())
 	utils.Respond(w, response)
 }
 
 // GetRandomPicWeb fetches a random picture from the server.
-var GetRandomPicWeb = func(w http.ResponseWriter, r *http.Request) {
-	pic := models.GetRandomPicture(models.GetDB())
+func (a *App) GetRandomPicWeb(w http.ResponseWriter, r *http.Request) {
+	pic := GetRandomPicture(a.GetDB())
 
 	if pic == nil {
 		fmt.Println("No random Pic returned!")
@@ -44,16 +43,16 @@ var GetRandomPicWeb = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetRecentPicsWeb will fetch a number of recent pictures (recently added) from the server.
-var GetRecentPicsWeb = func(w http.ResponseWriter, r *http.Request) {
-	var pics []models.Picture
+func (a *App) GetRecentPicsWeb(w http.ResponseWriter, r *http.Request) {
+	var pics []Picture
 
-	pics = models.GetRecentPics(20, models.GetDB())
-	renderTemplateList(w, "piclist", pics)
+	pics = GetRecentPics(20, a.GetDB())
+	renderTemplateList(w, "piclist", pics, *a)
 }
 
 // GetDetailPicWeb get the picture with ID specified in URL.
-var GetDetailPicWeb = func(w http.ResponseWriter, r *http.Request) {
-	pic := &models.Picture{}
+func (a *App) GetDetailPicWeb(w http.ResponseWriter, r *http.Request) {
+	pic := &Picture{}
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["picID"])
 	if err != nil {
@@ -61,19 +60,19 @@ var GetDetailPicWeb = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pic = models.GetPictureByID(uint(id), models.GetDB())
-	renderTemplate(w, "detail", pic)
+	pic = GetPictureByID(uint(id), a.GetDB())
+	renderTemplate(w, "detail", pic, *a)
 }
 
-func renderTemplate(w http.ResponseWriter, tmpl string, picture *models.Picture) {
-	err := models.GetHTMLTemplates().ExecuteTemplate(w, tmpl+".html", picture)
+func renderTemplate(w http.ResponseWriter, tmpl string, picture *Picture, a App) {
+	err := a.GetHTMLTemplates().ExecuteTemplate(w, tmpl+".html", picture)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func renderTemplateList(w http.ResponseWriter, tmpl string, pictures []models.Picture) {
-	err := models.GetHTMLTemplates().ExecuteTemplate(w, tmpl+".html", pictures)
+func renderTemplateList(w http.ResponseWriter, tmpl string, pictures []Picture, a App) {
+	err := a.GetHTMLTemplates().ExecuteTemplate(w, tmpl+".html", pictures)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

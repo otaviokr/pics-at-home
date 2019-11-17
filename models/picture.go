@@ -43,7 +43,7 @@ func (pic *Picture) Validate(db *gorm.DB) (map[string]interface{}, bool) {
 		err := db.Table("pictures").Where("path = ?", pic.Path).First(picDB).Error
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
-				return utils.Message(false, fmt.Sprintf("Unexpected error while validating picture path in database: %s", pic.Path)), false
+				return utils.Message(false, fmt.Sprintf("Unexpected error while validating picture path in database: %s - Error: %v", pic.Path, err)), false
 			}
 		} else if picDB.ID > 0 {
 			return utils.Message(false, fmt.Sprintf("Picture path already stored in database: %s", pic.Path)), false

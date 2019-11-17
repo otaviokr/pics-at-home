@@ -2,48 +2,36 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
-	"github.com/otaviokr/pics-at-home/controllers"
 	"github.com/otaviokr/pics-at-home/models"
-)
-
-const (
-	// StaticDir is the path used to serve static files.
-	StaticDir = "/static/"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 
-	models.StartDB()
+	a := models.App{}
 
-	router := mux.NewRouter()
-	// TODO Define JWT Authentication.
-	// router.Use(app.JwtAuthentication)
-
-	// Handle to give a random picture.
-	router.HandleFunc("/api/pic/random", controllers.GetRandomPicAPI).Methods("GET")
-	router.HandleFunc("/api/pic/create", controllers.CreatePicAPI).Methods("POST")
-
-	router.HandleFunc("/pic/random", controllers.GetRandomPicWeb).Methods("GET")
-	router.HandleFunc("/pic/recent", controllers.GetRecentPicsWeb).Methods("GET")
-	router.HandleFunc("/pic/detail/{picID:[0-9]+}", controllers.GetDetailPicWeb).Methods("GET")
-
-	router.HandleFunc("/pic", controllers.GetRecentPicsWeb).Methods("GET")
-
-	router.PathPrefix(StaticDir).Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(os.Getenv("IMG_PATH")))))
-	router.HandleFunc("/", controllers.GetRecentPicsWeb).Methods("GET")
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Failed to load the env file!")
+	panic(err)
 	}
+	
+	config := models.Config{}
+	config.DBUser = os.Getenv("db_user")
+	config.DBPassword = os.Getenv("db_pass")
+	config.DBName = os.Getenv("db_name")
+	config.DBHost = os.Getenv("db_host")
+	config.DBPort = os.Getenv(("db_port"))
 
-	fmt.Printf("Port used: %s\n", port)
+	config.TemplatePath = os.Getenv("template_path")
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", port), router)
+	a.SetConfig(&config)
+
+	a.Initialize()
+	
+	err = a.ListenAndServe()
 	if err != nil {
 		fmt.Print(err)
 	}

@@ -27,7 +27,7 @@ func TestValidateMissingPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	// Actual test.
 	pic := &Picture{}
@@ -71,7 +71,7 @@ func TestValidateMissingRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	// Actual test.
 	pic := &Picture{}
@@ -116,7 +116,7 @@ func TestValidateConnectionError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	// Actual test.
 	pic := &Picture{}
@@ -143,7 +143,7 @@ func TestValidateNoIDUnexpectedError(t *testing.T) {
 	// Parameters used during the test.
 	expectedPath := "test.jpg"
 	expectedValidated := false
-	expectedMessage := utils.Message(false, fmt.Sprintf("Unexpected error while validating picture path in database: %s", expectedPath))
+	expectedMessage := utils.Message(false, fmt.Sprintf("Unexpected error while validating picture path in database: %s - Error: Testing error", expectedPath))
 
 	// Database Setup
 	dbSetting, mock, err := sqlmock.New()
@@ -151,16 +151,13 @@ func TestValidateNoIDUnexpectedError(t *testing.T) {
 		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	mock.ExpectQuery(
-		regexp.QuoteMeta(
-			fmt.Sprintf(`SELECT * FROM "pictures" WHERE "pictures"."deleted_at" IS NULL AND (("pictures"."path" = %s)) ORDER BY "pictures"."id" ASC LIMIT 1`, expectedPath))).
-		WillReturnError(fmt.Errorf("Testing error"))
+	mock.ExpectQuery(`SELECT . FROM *`).WillReturnError(fmt.Errorf("Testing error"))
 
 	db, err := gorm.Open("postgres", dbSetting)
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	// Actual test.
 	pic := &Picture{}
@@ -206,7 +203,7 @@ func TestValidatePictureWithID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	// Actual test.
 	pic := &Picture{}
@@ -247,7 +244,7 @@ func TestValidatePictureWithPathNotRegistered(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	pic := &Picture{}
 	pic.Path = expectedPath
@@ -289,7 +286,7 @@ func TestValidatePictureWithPathAlreadyRegistered(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	pic := &Picture{}
 	pic.Path = expectedPath
@@ -319,7 +316,7 @@ func TestCreateFailValidation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 
 	pic := &Picture{}
 	actual := pic.Create(db)
@@ -373,7 +370,7 @@ func TestGetRandomPicture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -408,7 +405,7 @@ func TestGetRandomPictureFailAllIDs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -444,7 +441,7 @@ func TestGetRandomPictureFailNoID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -487,7 +484,7 @@ func TestGetRandomPictureFailSpecificID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -528,7 +525,7 @@ func TestGetRandomPictureFailFileNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -573,7 +570,7 @@ func TestGetRandomPictureFailDecodeJPEG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -614,7 +611,7 @@ func TestGetRandomPictureInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -653,7 +650,7 @@ func TestGetRandomPictureInfoFailAllIDs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -690,7 +687,7 @@ func TestGetRandomPictureInfoFailNoID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -734,7 +731,7 @@ func TestGetRandomPictureInfoFailSpecificID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -770,7 +767,7 @@ func TestGetRecentPics(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -809,7 +806,7 @@ func TestGetRecentPicsErrorDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -845,7 +842,7 @@ func TestGetPictureByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
@@ -890,7 +887,7 @@ func TestGetPictureByIDFailErrorDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fail to connect to mock db: %v", err)
 	}
-	db.LogMode(true)
+	//db.LogMode(true)
 	defer db.Close()
 
 	// Actual test.
