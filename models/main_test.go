@@ -1,16 +1,17 @@
 package models
 
 import (
-	"testing"
 	"context"
 	"flag"
 	"fmt"
-	"os"
-	"github.com/joho/godotenv"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/joho/godotenv"
+	"os"
+	"testing"
+	"time"
 )
 
 var a App
@@ -27,7 +28,7 @@ func TestMain(m *testing.M) {
 		err := godotenv.Load("../.env")
 		if err != nil {
 			fmt.Println("Failed to load the env file!")
-		panic(err)
+			panic(err)
 		}
 
 		config := Config{}
@@ -78,7 +79,7 @@ func startDBinDocker(user, password, name, port, volume string) (string, error) 
 	// }
 	// io.Copy(os.Stdout, reader)
 
-	hostBinding := nat.PortBinding{HostIP: "0.0.0.0", HostPort: port}
+	hostBinding := nat.PortBinding{HostIP: "0.0.0.0", HostPort: "5432"}
 	containerPort, err := nat.NewPort("tcp", port)
 	if err != nil {
 		panic("Unable to get the port")
@@ -91,12 +92,13 @@ func startDBinDocker(user, password, name, port, volume string) (string, error) 
 	}
 
 	resp, err := cli.ContainerCreate(context.Background(), &container.Config{
-		Image: "postgres/postgres",
-		Env: []string{fmt.Sprintf("POSTGRES_PASSWORD=%s", password)},
-		Cmd: []string{"postgres"},
+		Image: "postgres",
+		Env:   []string{fmt.Sprintf("POSTGRES_PASSWORD=%s", password), fmt.Sprintf("POSTGRES_DB=%s", name)},
+		Cmd:   []string{"postgres"},
 	}, &container.HostConfig{
+		AutoRemove:   true,
 		PortBindings: portBinding,
-		Binds: binds,
+		Binds:        binds,
 	}, nil, "")
 	if err != nil {
 		fmt.Println("Unable to create docker container")
@@ -107,11 +109,14 @@ func startDBinDocker(user, password, name, port, volume string) (string, error) 
 		panic(err)
 	}
 
+	fmt.Println("Waiting for database up...")
+	time.Sleep(20 * time.Second)
 	return resp.ID, nil
 }
 
-func stopDBinDocker(containerID string) (error) {
-	cli, err := client.NewEnvClient()
+func stopDBinDocker(containerID string) error {
+	//cli, err := client.NewEnvClient()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}

@@ -86,7 +86,7 @@ func GetRandomPicture(db *gorm.DB) image.Image {
 	var picIDs []Picture
 	err := db.Table("pictures").Order("id ASC").Find(&picIDs).Error
 	if err != nil {
-		fmt.Println("Failed to get pictures IDs in database.")
+		fmt.Printf("Failed to get pictures IDs in database. %vn", err)
 		return nil
 	}
 
@@ -125,7 +125,7 @@ func GetRandomPictureInfo(db *gorm.DB) Picture {
 	var picIDs []Picture
 	err := db.Table("pictures").Order("id ASC").Find(&picIDs).Error
 	if err != nil {
-		fmt.Println("Failed to get pictures IDs in database.")
+		fmt.Printf("Failed to get pictures IDs in database. %v", err)
 		return Picture{}
 	}
 
@@ -146,7 +146,7 @@ func GetRecentPics(n uint, db *gorm.DB) []Picture {
 
 	err := db.Table("pictures").Order("created_at DESC").Limit(n).Find(&pics).Error
 	if err != nil {
-		fmt.Println("Failed to get pictures from database.")
+		fmt.Printf("Failed to get pictures IDs in database. %v\n", err)
 		return nil
 	}
 
