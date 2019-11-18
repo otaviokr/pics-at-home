@@ -37,6 +37,7 @@ func TestCreatePicAPI(t *testing.T) {
 	expectedPath := "test.jpg"
 	expectedDescription := "this is test"
 
+	var db *gorm.DB
 	if testing.Short() {
 		// Database Setup
 		dbSetting, mock, err := sqlmock.New()
@@ -62,7 +63,7 @@ func TestCreatePicAPI(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("154"))
 		mock.ExpectCommit()
 
-		db, err := gorm.Open("postgres", dbSetting)
+		db, err = gorm.Open("postgres", dbSetting)
 		if err != nil {
 			t.Errorf("Fail to connect to mock db: %v", err)
 		}
@@ -71,6 +72,8 @@ func TestCreatePicAPI(t *testing.T) {
 
 		a.SetDB(db)
 		a.StartRouter()
+	} else {
+		db = a.GetDB()
 	}
 
 	p := Picture{Path: expectedPath, Description: expectedDescription}
@@ -108,8 +111,7 @@ func TestCreatePicAPI(t *testing.T) {
 }
 
 func TestGetRandomPicAPINoPics(t *testing.T) {
-	a := App{}
-
+	var db *gorm.DB
 	if testing.Short() {
 		// Database Setup
 		dbSetting, mock, err := sqlmock.New()
@@ -120,7 +122,7 @@ func TestGetRandomPicAPINoPics(t *testing.T) {
 		// TODO improve mocks!
 		mock.ExpectQuery(`SELECT . FROM .+`).WillReturnError(gorm.ErrRecordNotFound)
 
-		db, err := gorm.Open("postgres", dbSetting)
+		db, err = gorm.Open("postgres", dbSetting)
 		if err != nil {
 			t.Errorf("Fail to connect to mock db: %v", err)
 		}
@@ -129,6 +131,8 @@ func TestGetRandomPicAPINoPics(t *testing.T) {
 
 		a.SetDB(db)
 		a.StartRouter()
+	} else {
+		db = a.GetDB()
 	}
 
 	req, err := http.NewRequest(http.MethodGet, "/api/pic/random", nil)
