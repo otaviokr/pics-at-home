@@ -40,6 +40,7 @@ func (pic *Picture) Validate(db *gorm.DB) (map[string]interface{}, bool) {
 
 	} else {
 		// Avoid to save a picture that's already registered in database, i.e., we expect to get ErrRecordNotFound error.
+		//err := db.Table("pictures").Where("path = ?", pic.Path).First(picDB).Error
 		err := db.Table("pictures").Where("path = ?", pic.Path).First(picDB).Error
 		if err != nil {
 			if err != gorm.ErrRecordNotFound {
@@ -86,7 +87,7 @@ func GetRandomPicture(db *gorm.DB) image.Image {
 	var picIDs []Picture
 	err := db.Table("pictures").Order("id ASC").Find(&picIDs).Error
 	if err != nil {
-		fmt.Printf("Failed to get pictures IDs in database. %vn", err)
+		fmt.Printf("Failed to get pictures IDs in database. %v\n", err)
 		return nil
 	}
 
@@ -100,13 +101,13 @@ func GetRandomPicture(db *gorm.DB) image.Image {
 
 		picFile, err := os.Open(pic.Path)
 		if err != nil {
-			fmt.Printf("Could not open picture: %s", pic.Path)
+			fmt.Printf("Could not open picture: %s\n", pic.Path)
 			return nil
 		}
 
 		img, err := jpeg.Decode(picFile)
 		if err != nil {
-			fmt.Printf("Could not decode picture: %s", pic.Path)
+			fmt.Printf("Could not decode picture: %s\n", pic.Path)
 			return nil
 		}
 		picFile.Close()
@@ -125,7 +126,7 @@ func GetRandomPictureInfo(db *gorm.DB) Picture {
 	var picIDs []Picture
 	err := db.Table("pictures").Order("id ASC").Find(&picIDs).Error
 	if err != nil {
-		fmt.Printf("Failed to get pictures IDs in database. %v", err)
+		fmt.Printf("Failed to get pictures IDs in database. %v\n", err)
 		return Picture{}
 	}
 

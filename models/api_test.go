@@ -17,7 +17,7 @@ import (
 func TestCreatePicAPIFailGetMethod(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, "/api/pic/create", nil)
 	if err != nil {
-		t.Fatalf("Failed to create new request: %v", err)
+		t.Errorf("Failed to create new request: %v", err)
 	}
 
 	recorder := httptest.NewRecorder()
@@ -41,7 +41,7 @@ func TestCreatePicAPI(t *testing.T) {
 		// Database Setup
 		dbSetting, mock, err := sqlmock.New()
 		if err != nil {
-			t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+			t.Errorf("An error '%s' was not expected when opening a stub database connection", err)
 		}
 
 		// TODO improve mocks!
@@ -64,7 +64,7 @@ func TestCreatePicAPI(t *testing.T) {
 
 		db, err := gorm.Open("postgres", dbSetting)
 		if err != nil {
-			t.Fatalf("Fail to connect to mock db: %v", err)
+			t.Errorf("Fail to connect to mock db: %v", err)
 		}
 		//db.LogMode(true)
 		defer db.Close()
@@ -82,7 +82,7 @@ func TestCreatePicAPI(t *testing.T) {
 
 	req, err := http.NewRequest(http.MethodPost, "/api/pic/create", bytes.NewBuffer(picJSON))
 	if err != nil {
-		t.Fatalf("Failed to create new request: %v", err)
+		t.Errorf("Failed to create new request: %v", err)
 	}
 
 	recorder := httptest.NewRecorder()
@@ -98,11 +98,11 @@ func TestCreatePicAPI(t *testing.T) {
 		
 		err = json.Unmarshal(raw, &body)
 		if err != nil {
-			t.Fatalf("Failed to unmarshalled")
+			t.Errorf("Failed to unmarshalled")
 		}
 
 		if body["picture"] == nil {
-			t.Fatalf("Response does not contain picture entity.")
+			t.Errorf("Response does not contain picture entity.")
 		}
 	}
 }
@@ -110,28 +110,30 @@ func TestCreatePicAPI(t *testing.T) {
 func TestGetRandomPicAPINoPics(t *testing.T) {
 	a := App{}
 
-	// Database Setup
-	dbSetting, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	if testing.Short() {
+		// Database Setup
+		dbSetting, mock, err := sqlmock.New()
+		if err != nil {
+			t.Errorf("An error '%s' was not expected when opening a stub database connection", err)
+		}
+
+		// TODO improve mocks!
+		mock.ExpectQuery(`SELECT . FROM .+`).WillReturnError(gorm.ErrRecordNotFound)
+
+		db, err := gorm.Open("postgres", dbSetting)
+		if err != nil {
+			t.Errorf("Fail to connect to mock db: %v", err)
+		}
+		//db.LogMode(true)
+		defer db.Close()
+
+		a.SetDB(db)
+		a.StartRouter()
 	}
-
-	// TODO improve mocks!
-	mock.ExpectQuery(`SELECT . FROM .+`).WillReturnError(gorm.ErrRecordNotFound)
-
-	db, err := gorm.Open("postgres", dbSetting)
-	if err != nil {
-		t.Fatalf("Fail to connect to mock db: %v", err)
-	}
-	//db.LogMode(true)
-	defer db.Close()
-
-	a.SetDB(db)
-	a.StartRouter()
 
 	req, err := http.NewRequest(http.MethodGet, "/api/pic/random", nil)
 	if err != nil {
-		t.Fatalf("Failed to create new request: %v", err)
+		t.Errorf("Failed to create new request: %v", err)
 	}
 
 	recorder := httptest.NewRecorder()
@@ -147,14 +149,14 @@ func TestGetRandomPicAPINoPics(t *testing.T) {
 		
 		err = json.Unmarshal(raw, &body)
 		if err != nil {
-			t.Fatalf("Failed to unmarshalled")
+			t.Errorf("Failed to unmarshalled")
 		}
 
 		if body["picture"] != nil {
 			var picReturned map[string]interface{}
 			picReturned = body["picture"].(map[string]interface{})
 			if int(picReturned["ID"].(float64)) != 0  {
-				t.Fatalf("Response does not contain picture entity! -Picture: %v", picReturned)
+				t.Errorf("Response does not contain picture entity! -Picture: %v", picReturned)
 			}
 		}
 	}
