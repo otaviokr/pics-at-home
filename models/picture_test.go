@@ -133,7 +133,10 @@ func TestValidateConnectionError(t *testing.T) {
 		//db.LogMode(true)
 		defer db.Close()
 	} else {
-		db = a.GetDB()
+		//db = a.GetDB()
+		
+		t.Log("Ignoring this test for integration until a way to simulate connection error can be defined.")
+		return
 	}
 
 	// Actual test.
@@ -182,6 +185,9 @@ func TestValidateNoIDUnexpectedError(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+
+		t.Log("Ignoring this test for integration until a way to simulate expected error can be defined.")
+		return
 	}
 
 	// Actual test.
@@ -206,7 +212,7 @@ func TestValidateNoIDUnexpectedError(t *testing.T) {
 
 func TestValidatePictureWithID(t *testing.T) {
 	// Parameters used during the test.
-	expectedID := 25
+	expectedID := 1
 	expectedPath := "test.jpg"
 	expectedValidated := true
 	expectedMessage := utils.Message(false, "Validation passed")
@@ -234,6 +240,11 @@ func TestValidatePictureWithID(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+
+		db.Delete(Picture{})
+		p := Picture{Path: "test.jpg"}
+		db.Create(&p)
+		expectedID = int(p.ID)
 	}
 
 	// Actual test.
@@ -329,6 +340,10 @@ func TestValidatePictureWithPathAlreadyRegistered(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+
+		db.Delete(Picture{})
+		p := Picture{Path: "test.jpg"}
+		db.Create(&p)
 	}
 
 	pic := &Picture{}
@@ -428,6 +443,10 @@ func TestGetRandomPicture(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+
+		db.Delete(Picture{})
+		p := Picture{Path: "test.jpg"}
+		db.Create(&p)
 	}
 
 	// Actual test.
@@ -701,6 +720,11 @@ func TestGetRandomPictureInfo(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+
+		db.Delete(Picture{})
+		p := Picture{Path: "test.jpg"}
+		db.Create(&p)
+		expectedID = int(p.ID)
 	}
 
 	// Actual test.
@@ -879,6 +903,10 @@ func TestGetRecentPics(t *testing.T) {
 		defer db.Close()
 	} else {
 		db = a.GetDB()
+		db.Delete(Picture{})
+		p := Picture{Path: "test.jpg"}
+		db.Create(&p)
+		expectedID = int(p.ID)
 	}
 
 	// Actual test.
@@ -889,6 +917,9 @@ func TestGetRecentPics(t *testing.T) {
 	actual := GetRecentPics(uint(expectedNumberOfPics), db)
 
 	// Validation.
+	if len(actual) < 1 {
+		t.Error("No valid picture retrieved!")
+	}
 	if actual[0].ID != uint(expectedID) {
 		t.Errorf("ID mismatch! actual[%v] - expected[%v]", actual, expectedID)
 	}

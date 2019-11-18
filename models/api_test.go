@@ -74,6 +74,7 @@ func TestCreatePicAPI(t *testing.T) {
 		a.StartRouter()
 	} else {
 		db = a.GetDB()
+		db.Delete(Picture{})
 	}
 
 	p := Picture{Path: expectedPath, Description: expectedDescription}
@@ -133,6 +134,7 @@ func TestGetRandomPicAPINoPics(t *testing.T) {
 		a.StartRouter()
 	} else {
 		db = a.GetDB()
+		db.Delete(Picture{})
 	}
 
 	req, err := http.NewRequest(http.MethodGet, "/api/pic/random", nil)
